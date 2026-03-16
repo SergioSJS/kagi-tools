@@ -1,0 +1,54 @@
+# Ambiente virtual
+.venv/
+venv/
+env/
+
+# Configuração sensível
+.env
+
+# Debug
+debug_*.html
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Testes
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+*.cover
+.hypothesis/
+
+# Arquivos de backup (prefira não versionar)
+backup_files/
+
+# Downloads
+downloads/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+
+# MyPy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Ruff
+.ruff_cache/
