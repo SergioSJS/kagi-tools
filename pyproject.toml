@@ -27,6 +27,9 @@ dependencies = [
     "selenium>=4.0.0",
 ]
 
+[tool.setuptools]
+py-modules = ["kagi_simple", "kagi_summarizer", "kagi_integrated", "kagi_images"]
+
 [project.optional-dependencies]
 dev = [
     "pytest>=9.0.0",
