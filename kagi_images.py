@@ -135,10 +135,11 @@ class KagiImageDownloader:
             "query": query,
             "requested": num_images,
             "found": len(image_urls),
-            "downloaded": len(downloaded_files),
+            "downloaded": len(final_files),
+            "total_fetched": len(downloaded_files),
             "attempts": attempts,
             "output_dir": str(output_path),
-            "files": downloaded_files,
+            "files": final_files,
         }
 
     def _extract_image_urls(self, url: str, num_images: int, debug: bool = False) -> list:
@@ -147,8 +148,6 @@ class KagiImageDownloader:
             from selenium import webdriver
             from selenium.webdriver.chrome.options import Options
             from selenium.webdriver.common.by import By
-            from selenium.webdriver.support import expected_conditions as EC
-            from selenium.webdriver.support.ui import WebDriverWait
         except ImportError:
             print("❌ Selenium não instalado. Instale com: pip install selenium")
             return []
@@ -208,16 +207,21 @@ class KagiImageDownloader:
                             for ext in [".jpg", ".jpeg", ".png", ".webp", ".gif"]
                         ):
                             img_url = href
-                except:
+                except Exception:
                     pass
 
-                # Método 2: Atributos alternativos (data-src, data-original, etc)
+                # Método 2: Atributos alternativos (priorizar alta resolução)
                 if not img_url:
+                    # Priorizar atributos de alta qualidade primeiro
                     img_url = (
-                        img.get_attribute("data-src")
+                        img.get_attribute("data-full")
                         or img.get_attribute("data-original")
-                        or img.get_attribute("data-full")
-                        or img.get_attribute("src")
+                        or img.get_attribute("data-img-url")
+                        or img.get_attribute("data-href")
+                        or img.get_attribute("data-img")
+                        or img.get_attribute("data-highres")
+                        or img.get_attribute("data-src")
+                        or img.get_attribute("src")  # fallback - pode ser thumbnail
                     )
 
                 # Filtrar e adicionar
@@ -257,13 +261,13 @@ class KagiImageDownloader:
 
         return image_urls
 
-    def _download_image(self, url: str, output_dir: Path, index: int, debug: bool = False) -> str:
-        """Baixa uma imagem e salva no diretório"""
+    def _download_image(self, url: str, output_dir: Path, index: int, debug: bool = False) -> dict:
+        """Baixa uma imagem e salva no diretório. Retorna dict com path e tamanho"""
         try:
             response = requests.get(url, timeout=30, stream=True)
             response.raise_for_status()
             ext = self._get_file_extension(url, response.headers.get("Content-Type", ""))
-            filename = f"image_{index:03d}{ext}"
+            filename = f"temp_{index:04d}{ext}"  # Usar temp_ para indicar que é temporário
             filepath = output_dir / filename
 
             with open(filepath, "wb") as f:
@@ -272,15 +276,16 @@ class KagiImageDownloader:
 
             # Verificar se imagem é muito pequena (provável thumbnail)
             file_size_kb = filepath.stat().st_size / 1024
-            if file_size_kb < 10:  # Menor que 10KB, provavelmente é thumbnail/icon
+            if file_size_kb < 30:  # Menor que 30KB, provavelmente é thumbnail/icon
                 if debug:
                     print(f"   ⚠️  Pulada (muito pequena): {filename} ({file_size_kb:.1f} KB)")
                 filepath.unlink()  # Deletar arquivo
                 return None
 
-            if debug:
-                print(f"   ✅ Baixada: {filename} ({file_size_kb:.1f} KB)")
-            return str(filepath)
+            if debug and file_size_kb > 500:  # Destacar imagens grandes
+                print(f"   ✅ Baixada (grande!): {filename} ({file_size_kb:.1f} KB)")
+
+            return {"path": str(filepath), "size_kb": file_size_kb}
         except Exception as e:
             if debug:
                 print(f"   ❌ Erro ao baixar {url}: {e}")
@@ -310,27 +315,53 @@ class KagiImageDownloader:
         for char in '<>:"/\\|?*':
             filename = filename.replace(char, "_")
         return filename.strip()
+select_best_images(
+        self, downloaded_files: list, num_images: int, output_dir: Path, debug: bool = False
+    ) -> list:
+        """Seleciona as N maiores imagens (melhor qualidade) e deleta o resto"""
+        if not downloaded_files:
+            return []
+
+        # Ordenar por tamanho (maior primeiro)
+        sorted_files = sorted(downloaded_files, key=lambda x: x["size_kb"], reverse=True)
+
+        # Pegar as N maiores
+        best_files = sorted_files[:num_images]
+        rejected_files = sorted_files[num_images:]
+
+        if debug:
+            print(f"\n   📊 Seleção de qualidade:")
+            print(f"   ✅ Melhores {len(best_files)} imagens: {best_files[0]['size_kb']:.1f} KB (maior) até {best_files[-1]['size_kb']:.1f} KB")
+            if rejected_files:
+                print(f"   🗑️  Descartando {len(rejected_files)} imagens menores")
+
+        # Deletar arquivos rejeitados
+        for file_info in rejected_files:
+            try:
+                Path(file_info["path"]).unlink()
+            except Exception:
+                pass
+
+        # Retornar apenas os paths dos melhores
+        return [f["path"] for f in best_files]
 
     def _renumber_files(self, files: list, output_dir: Path, debug: bool = False) -> None:
         """Renumera arquivos baixados para sequência correta 001, 002, 003..."""
         if not files:
             return
 
-        # Criar nomes temporários para evitar conflitos
-        temp_mapping = []
+        # Renomear de temp_XXXX para image_XXX
         for idx, filepath in enumerate(files, 1):
             old_path = Path(filepath)
             ext = old_path.suffix
             new_name = f"image_{idx:03d}{ext}"
-            temp_name = f"temp_{idx:03d}{ext}"
-            temp_path = output_dir / temp_name
+            new_path = output_dir / new_name
 
-            # Renomear para temp
-            old_path.rename(temp_path)
-            temp_mapping.append((temp_path, output_dir / new_name))
+            # Se já existe arquivo com esse nome, deletar (não deveria acontecer)
+            if new_path.exists():
+                new_path.unlink()
 
-        # Renomear de temp para final
-        for temp_path, final_path in temp_mapping:
+            old_path.rename(newin temp_mapping:
             temp_path.rename(final_path)
 
         if debug:
@@ -355,14 +386,14 @@ def main():
         print('  python kagi_images.py "cats" 5 --output ./my_cats --debug')
         print("\nOpções:")
         print("  --size SIZE       Tamanho: small, medium, large, wallpaper")
-        print("  --output DIR      Diretório de saída (padrão: downloads/query)")
-        print("  --debug           Modo debug com informações detalhadas")
-        sys.exit(1)
+        print("  --ou� Imagens baixadas: {result.get('total_fetched', 0)}")
+            print(f"⭐ Imagens selecionadas (melhores): {result['downloaded']}")
 
-    query = sys.argv[1]
-    num_images = int(sys.argv[2]) if len(sys.argv) > 2 and sys.argv[2].isdigit() else 10
-    size = get_arg_value("--size")
-    output_dir = get_arg_value("--output")
+            if result["downloaded"] >= result["requested"]:
+                print(f"🎉 Meta atingida: {result['downloaded']}/{result['requested']}")
+            else:
+                print(
+                    f"⚠️  Conseguimot")
     debug = "--debug" in sys.argv
 
     print(f"\n🖼️  Kagi Image Downloader\n🔍 Busca: {query}\n📊 Imagens: {num_images}")

@@ -1,6 +1,7 @@
 """
 Configuração compartilhada de testes pytest
 """
+
 import pytest
 
 
@@ -41,21 +42,21 @@ def mock_html_response():
 def mock_search_results():
     """Resultados de busca de exemplo"""
     return {
-        'success': True,
-        'query': 'test query',
-        'total': 2,
-        'results': [
+        "success": True,
+        "query": "test query",
+        "total": 2,
+        "results": [
             {
-                'title': 'Example Result 1',
-                'url': 'https://example.com/1',
-                'snippet': 'This is an example result'
+                "title": "Example Result 1",
+                "url": "https://example.com/1",
+                "snippet": "This is an example result",
             },
             {
-                'title': 'Example Result 2',
-                'url': 'https://example.com/2',
-                'snippet': 'Another example result'
-            }
-        ]
+                "title": "Example Result 2",
+                "url": "https://example.com/2",
+                "snippet": "Another example result",
+            },
+        ],
     }
 
 
@@ -63,9 +64,9 @@ def mock_search_results():
 def mock_summary_result():
     """Resultado de sumarização de exemplo"""
     return {
-        'success': True,
-        'url': 'https://example.com/article',
-        'summary': 'This is a summary of the article content.',
-        'language': 'EN',
-        'type': 'summary'
+        "success": True,
+        "url": "https://example.com/article",
+        "summary": "This is a summary of the article content.",
+        "language": "EN",
+        "type": "summary",
     }
