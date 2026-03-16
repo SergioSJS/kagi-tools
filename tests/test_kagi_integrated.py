@@ -1,8 +1,10 @@
 """
 Testes para o módulo kagi_integrated.py
 """
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, Mock, MagicMock
+
 from kagi_integrated import kagi_search_with_summary
 
 
@@ -34,7 +36,7 @@ class TestKagiIntegrated:
 
     @patch('kagi_integrated.KagiSummarizer')
     @patch('kagi_integrated.KagiSearch')
-    def test_search_with_summary(self, mock_kagi_search_class, mock_summarizer_class, 
+    def test_search_with_summary(self, mock_kagi_search_class, mock_summarizer_class,
                                   mock_search_results, mock_summary_result):
         """Testa busca com resumo"""
         # Mock KagiSearch
@@ -138,12 +140,12 @@ class TestKagiSearchFromEnv:
     def test_from_env_success(self, mock_kagi_class, mock_get_url):
         """Testa criação de instância a partir do .env"""
         from kagi_integrated import KagiSearch as IntegratedKagiSearch
-        
+
         mock_get_url.return_value = "https://kagi.com/search?token=test"
-        
+
         # O from_env é um classmethod que chama get_session_url_from_env
         result = IntegratedKagiSearch.from_env()
-        
+
         # Verifica que foi chamado
         assert result is not None
 
@@ -151,8 +153,8 @@ class TestKagiSearchFromEnv:
     def test_from_env_no_url(self, mock_get_url):
         """Testa erro quando URL não está configurada"""
         from kagi_integrated import KagiSearch as IntegratedKagiSearch
-        
+
         mock_get_url.return_value = None
-        
+
         with pytest.raises(ValueError, match="KAGI_SESSION_URL não configurada"):
             IntegratedKagiSearch.from_env()

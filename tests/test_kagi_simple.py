@@ -1,9 +1,8 @@
 """
 Testes para o módulo kagi_simple.py
 """
-import pytest
 import responses
-from unittest.mock import patch, Mock
+
 from kagi_simple import KagiSearch, format_results, get_session_url_from_env
 
 
@@ -51,7 +50,7 @@ class TestKagiSearch:
     def test_search_with_debug(self, session_url, mock_html_response, tmp_path, monkeypatch):
         """Testa busca com modo debug"""
         monkeypatch.chdir(tmp_path)
-        
+
         responses.add(
             responses.GET,
             "https://kagi.com/html/search",
@@ -148,10 +147,10 @@ class TestGetSessionUrlFromEnv:
         """Testa obtenção da URL do arquivo .env"""
         env_file = tmp_path / ".env"
         env_file.write_text("KAGI_SESSION_URL=https://kagi.com/search?token=file_token")
-        
+
         monkeypatch.chdir(tmp_path)
         monkeypatch.delenv("KAGI_SESSION_URL", raising=False)
-        
+
         url = get_session_url_from_env()
         assert url == "https://kagi.com/search?token=file_token"
 
@@ -159,6 +158,6 @@ class TestGetSessionUrlFromEnv:
         """Testa quando nenhuma URL é encontrada"""
         monkeypatch.chdir(tmp_path)
         monkeypatch.delenv("KAGI_SESSION_URL", raising=False)
-        
+
         url = get_session_url_from_env()
         assert url is None

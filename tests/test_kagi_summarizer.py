@@ -1,9 +1,10 @@
 """
 Testes para o módulo kagi_summarizer.py
 """
+from unittest.mock import MagicMock, patch
+
 import pytest
-import responses
-from unittest.mock import patch, Mock, MagicMock
+
 from kagi_summarizer import KagiSummarizer
 
 
@@ -24,7 +25,7 @@ class TestKagiSummarizer:
     def test_init_without_url_raises_error(self, monkeypatch):
         """Testa que erro é lançado sem URL de sessão"""
         monkeypatch.delenv("KAGI_SESSION_URL", raising=False)
-        
+
         with pytest.raises(ValueError, match="KAGI_SESSION_URL não configurada"):
             KagiSummarizer()
 
@@ -46,12 +47,12 @@ class TestKagiSummarizer:
         mock_driver = MagicMock()
         mock_element = MagicMock()
         mock_element.text = "This is a test summary of the article content."
-        
+
         mock_driver.find_element.return_value = mock_element
         mock_webdriver.Chrome.return_value.__enter__.return_value = mock_driver
 
         summarizer = KagiSummarizer(session_url)
-        
+
         with patch.object(summarizer, '_fetch_with_selenium', return_value="Test summary"):
             result = summarizer.summarize_url("https://example.com/article")
 
@@ -62,7 +63,7 @@ class TestKagiSummarizer:
     def test_summarize_url_failure(self, session_url):
         """Testa comportamento em caso de falha"""
         summarizer = KagiSummarizer(session_url)
-        
+
         with patch.object(summarizer, '_fetch_with_selenium', side_effect=Exception("Network error")):
             result = summarizer.summarize_url("https://example.com/article")
 
@@ -73,10 +74,10 @@ class TestKagiSummarizer:
     def test_clean_summary_text(self, session_url):
         """Testa limpeza do texto do resumo"""
         summarizer = KagiSummarizer(session_url)
-        
+
         dirty_text = "ExpandDiscuss Further\nThis is the actual summary\nTime saved reading"
         clean_text = summarizer._clean_summary_text(dirty_text)
-        
+
         assert "Expand" not in clean_text
         assert "Discuss Further" not in clean_text
         assert "This is the actual summary" in clean_text
@@ -92,12 +93,12 @@ class TestSummarizerIntegration:
         mock_driver = MagicMock()
         mock_element = MagicMock()
         mock_element.text = "Summary in Portuguese"
-        
+
         mock_driver.find_element.return_value = mock_element
         mock_webdriver.Chrome.return_value.__enter__.return_value = mock_driver
 
         summarizer = KagiSummarizer(session_url)
-        
+
         with patch.object(summarizer, '_fetch_with_selenium', return_value="Summary in Portuguese"):
             result = summarizer.summarize_url(
                 url="https://example.com/article",

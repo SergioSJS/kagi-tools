@@ -1,7 +1,6 @@
 """
 Configuração compartilhada de testes pytest
 """
-import os
 import pytest
 
 

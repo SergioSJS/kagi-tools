@@ -1,10 +1,10 @@
 """
 Testes para o módulo kagi_images.py
 """
+from unittest.mock import MagicMock, patch
+
 import pytest
-import responses
-from unittest.mock import patch, Mock, MagicMock
-from pathlib import Path
+
 from kagi_images import KagiImageDownloader
 
 
@@ -25,7 +25,7 @@ class TestKagiImageDownloader:
     def test_init_without_url_raises_error(self, monkeypatch):
         """Testa que erro é lançado sem URL de sessão"""
         monkeypatch.delenv("KAGI_SESSION_URL", raising=False)
-        
+
         with pytest.raises(ValueError, match="KAGI_SESSION_URL não configurada"):
             KagiImageDownloader()
 
@@ -45,7 +45,7 @@ class TestKagiImageDownloader:
         mock_get.return_value = mock_response
 
         downloader = KagiImageDownloader(session_url)
-        
+
         # Mockar métodos internos para simplificar
         with patch.object(downloader, '_extract_image_urls', return_value=['https://example.com/img1.jpg']):
             with patch.object(downloader, '_download_images', return_value=(1, ['img1.jpg'])):
@@ -61,10 +61,10 @@ class TestKagiImageDownloader:
     def test_sanitize_filename(self, session_url):
         """Testa sanitização de nome de arquivo"""
         downloader = KagiImageDownloader(session_url)
-        
+
         dirty_name = "test/image:name*with?bad|chars"
         clean_name = downloader._sanitize_filename(dirty_name)
-        
+
         assert "/" not in clean_name
         assert ":" not in clean_name
         assert "*" not in clean_name
@@ -77,7 +77,7 @@ class TestKagiImageDownloader:
         mock_get.side_effect = Exception("Network error")
 
         downloader = KagiImageDownloader(session_url)
-        
+
         with patch.object(downloader, '_extract_image_urls', return_value=[]):
             result = downloader.search_and_download(
                 query="test",
@@ -91,7 +91,7 @@ class TestKagiImageDownloader:
     def test_size_filter_parameter(self, session_url):
         """Testa parâmetro de filtro de tamanho"""
         downloader = KagiImageDownloader(session_url)
-        
+
         with patch.object(downloader, '_extract_image_urls', return_value=[]):
             with patch.object(downloader, '_download_images', return_value=(0, [])):
                 result = downloader.search_and_download(
@@ -115,17 +115,17 @@ class TestImageDownloaderIntegration:
         html_response = MagicMock()
         html_response.status_code = 200
         html_response.text = '<html><img src="https://example.com/test.jpg"/></html>'
-        
+
         # Mock resposta de imagem
         image_response = MagicMock()
         image_response.status_code = 200
         image_response.content = b'fake_image_content'
         image_response.headers = {'content-type': 'image/jpeg'}
-        
+
         mock_get.side_effect = [html_response, image_response]
 
         downloader = KagiImageDownloader(session_url)
-        
+
         # Este teste pode precisar de mais mocks dependendo da implementação
         # Por enquanto, verifica se a instância foi criada
         assert downloader is not None
