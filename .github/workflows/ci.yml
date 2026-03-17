@@ -37,7 +37,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        uv venv
+        uv venv --clear
         uv pip install -r requirements.txt
         uv pip install pytest pytest-cov pytest-mock responses black ruff
         uv pip install -e .
