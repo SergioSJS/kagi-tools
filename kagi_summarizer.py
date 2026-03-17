@@ -9,9 +9,34 @@ from urllib.parse import parse_qs, urlencode, urlparse
 
 import requests
 
+try:
+    from selenium import webdriver
+except ImportError:
+    webdriver = None
+
 
 class KagiSummarizer:
     """Cliente para usar o Kagi Summarizer"""
+
+    @classmethod
+    def from_env(cls):
+        """Cria instância pegando URL do .env"""
+        url = os.environ.get("KAGI_SESSION_URL")
+        if not url:
+            try:
+                with open(".env") as f:
+                    for line in f:
+                        line = line.strip()
+                        if line and not line.startswith("#") and "=" in line:
+                            key, value = line.split("=", 1)
+                            if key.strip() == "KAGI_SESSION_URL":
+                                url = value.strip().strip('"').strip("'")
+                                break
+            except FileNotFoundError:
+                pass
+        if not url:
+            raise ValueError("KAGI_SESSION_URL não configurada no .env")
+        return cls(url)
 
     def __init__(self, session_url: str = None):
         """

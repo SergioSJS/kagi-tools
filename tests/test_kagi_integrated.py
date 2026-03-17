@@ -142,12 +142,12 @@ class TestKagiSearchFromEnv:
         # Verifica que foi chamado
         assert result is not None
 
-    @patch("kagi_integrated.get_session_url_from_env")
+    @patch("kagi_simple.get_session_url_from_env")
     def test_from_env_no_url(self, mock_get_url):
         """Testa erro quando URL não está configurada"""
-        from kagi_integrated import KagiSearch as IntegratedKagiSearch
+        from kagi_simple import KagiSearch
 
         mock_get_url.return_value = None
 
         with pytest.raises(ValueError, match="KAGI_SESSION_URL não configurada"):
-            IntegratedKagiSearch.from_env()
+            KagiSearch.from_env()

@@ -10,9 +10,19 @@ from urllib.parse import parse_qs, urlparse
 import requests
 from bs4 import BeautifulSoup
 
+__all__ = ["KagiSearch", "get_session_url_from_env", "format_results"]
+
 
 class KagiSearch:
     """Cliente simples para buscar no Kagi usando URL com sessão"""
+
+    @classmethod
+    def from_env(cls):
+        """Cria instância pegando URL do .env"""
+        url = get_session_url_from_env()
+        if not url:
+            raise ValueError("KAGI_SESSION_URL não configurada no .env")
+        return cls(url)
 
     def __init__(self, session_url: str):
         """

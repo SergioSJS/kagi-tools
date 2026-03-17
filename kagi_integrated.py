@@ -40,7 +40,7 @@ def kagi_search_with_summary(
 
     # 1. Fazer busca
     try:
-        kagi_search = KagiSearch(session_url) if session_url else KagiSearchHelper.from_env()
+        kagi_search = KagiSearch(session_url) if session_url else KagiSearch.from_env()
         search_results = kagi_search.search(query)
 
         if not search_results["success"]:
@@ -92,17 +92,10 @@ def kagi_search_with_summary(
     return results
 
 
-# Versão alternativa para compatibilidade
-class KagiSearchHelper:
-    @classmethod
-    def from_env(cls):
-        """Cria instância pegando URL do .env"""
-        from kagi_simple import get_session_url_from_env
+# Exportar função para testes
+from kagi_simple import get_session_url_from_env
 
-        url = get_session_url_from_env()
-        if not url:
-            raise ValueError("KAGI_SESSION_URL não configurada no .env")
-        return KagiSearch(url)
+__all__ = ["kagi_search_with_summary", "get_session_url_from_env"]
 
 
 def main():

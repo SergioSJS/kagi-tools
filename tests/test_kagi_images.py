@@ -27,6 +27,11 @@ class TestKagiImageDownloader:
         """Testa que erro é lançado sem URL de sessão"""
         monkeypatch.delenv("KAGI_SESSION_URL", raising=False)
 
+        # Mockar leitura do .env para garantir que falha
+        def mock_open(*args, **kwargs):
+            raise FileNotFoundError(".env not found")
+        monkeypatch.setattr("builtins.open", mock_open)
+
         with pytest.raises(ValueError, match="KAGI_SESSION_URL não configurada"):
             KagiImageDownloader()
 

@@ -15,6 +15,25 @@ import requests
 class KagiImageDownloader:
     """Cliente para buscar e baixar imagens do Kagi"""
 
+    @classmethod
+    def from_env(cls):
+        """Cria instância pegando URL do .env"""
+        url = os.environ.get("KAGI_SESSION_URL")
+        if not url:
+            try:
+                with open(".env") as f:
+                    for line in f:
+                        if "=" in (line := line.strip()) and not line.startswith("#"):
+                            key, value = line.split("=", 1)
+                            if key.strip() == "KAGI_SESSION_URL":
+                                url = value.strip().strip('"').strip("'")
+                                break
+            except FileNotFoundError:
+                pass
+        if not url:
+            raise ValueError("KAGI_SESSION_URL não configurada no .env")
+        return cls(url)
+
     def __init__(self, session_url: str = None):
         """
         Args:
@@ -135,13 +154,23 @@ class KagiImageDownloader:
             "query": query,
             "requested": num_images,
             "found": len(image_urls),
-            "downloaded": len(final_files),
+            "downloaded": len(downloaded_files),
             "total_fetched": len(downloaded_files),
             "attempts": attempts,
             "output_dir": str(output_path),
-            "files": final_files,
+            "files": downloaded_files,
         }
-
+    def _download_images(self, image_urls: list, output_dir: Path, num_images: int, debug: bool = False) -> tuple:
+        """Método de compatibilidade para testes - baixa múltiplas imagens"""
+        downloaded = []
+        for idx, url in enumerate(image_urls[:num_images], 1):
+            try:
+                result = self._download_image(url, output_dir, idx, debug)
+                if result:
+                    downloaded.append(result["path"])
+            except Exception:
+                continue
+        return len(downloaded), downloaded
     def _extract_image_urls(self, url: str, num_images: int, debug: bool = False) -> list:
         """Usa Selenium para extrair URLs das imagens"""
         try:
