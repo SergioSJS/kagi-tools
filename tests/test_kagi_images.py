@@ -30,6 +30,7 @@ class TestKagiImageDownloader:
         # Mockar leitura do .env para garantir que falha
         def mock_open(*args, **kwargs):
             raise FileNotFoundError(".env not found")
+
         monkeypatch.setattr("builtins.open", mock_open)
 
         with pytest.raises(ValueError, match="KAGI_SESSION_URL não configurada"):

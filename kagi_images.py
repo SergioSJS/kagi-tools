@@ -160,7 +160,10 @@ class KagiImageDownloader:
             "output_dir": str(output_path),
             "files": downloaded_files,
         }
-    def _download_images(self, image_urls: list, output_dir: Path, num_images: int, debug: bool = False) -> tuple:
+
+    def _download_images(
+        self, image_urls: list, output_dir: Path, num_images: int, debug: bool = False
+    ) -> tuple:
         """Método de compatibilidade para testes - baixa múltiplas imagens"""
         downloaded = []
         for idx, url in enumerate(image_urls[:num_images], 1):
@@ -171,6 +174,7 @@ class KagiImageDownloader:
             except Exception:
                 continue
         return len(downloaded), downloaded
+
     def _extract_image_urls(self, url: str, num_images: int, debug: bool = False) -> list:
         """Usa Selenium para extrair URLs das imagens"""
         try:
@@ -361,7 +365,9 @@ class KagiImageDownloader:
 
         if debug:
             print("\n   📊 Seleção de qualidade:")
-            print(f"   ✅ Melhores {len(best_files)} imagens: {best_files[0]['size_kb']:.1f} KB (maior) até {best_files[-1]['size_kb']:.1f} KB")
+            print(
+                f"   ✅ Melhores {len(best_files)} imagens: {best_files[0]['size_kb']:.1f} KB (maior) até {best_files[-1]['size_kb']:.1f} KB"
+            )
             if rejected_files:
                 print(f"   🗑️  Descartando {len(rejected_files)} imagens menores")
 
