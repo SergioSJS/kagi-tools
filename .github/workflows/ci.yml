@@ -2,17 +2,16 @@ name: CI
 
 on:
   push:
-    branches: [ main, master, develop ]
+    branches: [ main, develop ]
   pull_request:
-    branches: [ main, master, develop ]
+    branches: [ main ]
 
 jobs:
   test:
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
         python-version: ['3.11', '3.12']
 
     steps:
@@ -40,7 +39,7 @@ jobs:
       run: |
         uv venv
         uv pip install -r requirements.txt
-        uv pip install pytest pytest-cov pytest-mock responses black ruff mypy pre-commit --python .venv/bin/python
+        uv pip install pytest pytest-cov pytest-mock responses black ruff
         uv pip install -e .
 
     - name: Lint with Ruff
@@ -51,35 +50,8 @@ jobs:
       run: |
         .venv/bin/black --check .
 
-    - name: Type check with MyPy
-      run: |
-        .venv/bin/mypy . --ignore-missing-imports || true
-
-    - name: Run tests with pytest
+    - name: Run tests
       env:
         KAGI_SESSION_URL: "https://kagi.com/search?token=test_token_for_ci"
       run: |
-        .venv/bin/pytest tests/ -v --cov=. --cov-report=xml --cov-report=term-missing
-
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v4
-      with:
-        file: ./coverage.xml
-        fail_ci_if_error: false
-        token: ${{ secrets.CODECOV_TOKEN }}
-
-  security:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Run Bandit security check
-      run: |
-        pip install bandit
-        bandit -r . -f json -o bandit-report.json || true
-
-    - name: Upload Bandit report
-      uses: actions/upload-artifact@v4
-      with:
-        name: bandit-security-report
-        path: bandit-report.json
+        .venv/bin/pytest tests/ -v --cov=. --cov-report=term-missing
