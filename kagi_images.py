@@ -360,7 +360,7 @@ class KagiImageDownloader:
         rejected_files = sorted_files[num_images:]
 
         if debug:
-            print(f"\n   📊 Seleção de qualidade:")
+            print("\n   📊 Seleção de qualidade:")
             print(f"   ✅ Melhores {len(best_files)} imagens: {best_files[0]['size_kb']:.1f} KB (maior) até {best_files[-1]['size_kb']:.1f} KB")
             if rejected_files:
                 print(f"   🗑️  Descartando {len(rejected_files)} imagens menores")

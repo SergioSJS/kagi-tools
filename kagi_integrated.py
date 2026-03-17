@@ -6,7 +6,7 @@ Kagi Integrado - Busca com resumo opcional
 import json
 import time
 
-from kagi_simple import KagiSearch
+from kagi_simple import KagiSearch, get_session_url_from_env
 from kagi_summarizer import KagiSummarizer
 
 
@@ -91,9 +91,6 @@ def kagi_search_with_summary(
 
     return results
 
-
-# Exportar função para testes
-from kagi_simple import get_session_url_from_env
 
 __all__ = ["kagi_search_with_summary", "get_session_url_from_env"]
 
