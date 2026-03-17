@@ -315,7 +315,8 @@ class KagiImageDownloader:
         for char in '<>:"/\\|?*':
             filename = filename.replace(char, "_")
         return filename.strip()
-select_best_images(
+
+    def _select_best_images(
         self, downloaded_files: list, num_images: int, output_dir: Path, debug: bool = False
     ) -> list:
         """Seleciona as N maiores imagens (melhor qualidade) e deleta o resto"""
@@ -361,8 +362,7 @@ select_best_images(
             if new_path.exists():
                 new_path.unlink()
 
-            old_path.rename(newin temp_mapping:
-            temp_path.rename(final_path)
+            old_path.rename(new_path)
 
         if debug:
             print(f"   🔄 Arquivos renumerados: {len(files)} imagens")
@@ -386,14 +386,15 @@ def main():
         print('  python kagi_images.py "cats" 5 --output ./my_cats --debug')
         print("\nOpções:")
         print("  --size SIZE       Tamanho: small, medium, large, wallpaper")
-        print("  --ou� Imagens baixadas: {result.get('total_fetched', 0)}")
-            print(f"⭐ Imagens selecionadas (melhores): {result['downloaded']}")
+        print("  --output DIR      Diretório de saída (padrão: downloads/<query>)")
+        print("  --debug           Mostrar informações detalhadas")
+        sys.exit(0)
 
-            if result["downloaded"] >= result["requested"]:
-                print(f"🎉 Meta atingida: {result['downloaded']}/{result['requested']}")
-            else:
-                print(
-                    f"⚠️  Conseguimot")
+    # Parsear argumentos
+    query = sys.argv[1]
+    num_images = int(sys.argv[2]) if len(sys.argv) > 2 and sys.argv[2].isdigit() else 10
+    size = get_arg_value("--size")
+    output_dir = get_arg_value("--output")
     debug = "--debug" in sys.argv
 
     print(f"\n🖼️  Kagi Image Downloader\n🔍 Busca: {query}\n📊 Imagens: {num_images}")
